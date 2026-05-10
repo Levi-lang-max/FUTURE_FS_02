@@ -9,6 +9,9 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { Toaster } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
 
 function NotFoundComponent() {
   return (
@@ -108,12 +111,52 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function SiteHeader() {
+  const { user, isAdmin, signOut } = useAuth();
+  return (
+    <header className="border-b border-border bg-card">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        <Link to="/" className="text-lg font-semibold text-foreground">
+          Mini CRM
+        </Link>
+        <nav className="flex items-center gap-2">
+          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
+            Contact
+          </Link>
+          {user && isAdmin && (
+            <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
+              Dashboard
+            </Link>
+          )}
+          {user ? (
+            <Button size="sm" variant="outline" onClick={() => void signOut()}>
+              Sign out
+            </Button>
+          ) : (
+            <Link to="/login">
+              <Button size="sm" variant="outline">Admin login</Button>
+            </Link>
+          )}
+        </nav>
+      </div>
+    </header>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <AuthProvider>
+        <div className="min-h-screen flex flex-col bg-background">
+          <SiteHeader />
+          <main className="flex-1">
+            <Outlet />
+          </main>
+        </div>
+        <Toaster />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
